@@ -1,0 +1,33 @@
+{
+  # Global options
+  auto_https off  # Disable HTTPS since Nginx config doesn't use it
+}
+
+:8080 {
+  # Health check endpoint
+  handle /ping {
+    respond "pong" 200
+  }
+
+  # Proxy requests to the Go backend
+  handle_path /api/golang/* {
+    reverse_proxy ${GO_SERVICE} {
+      header_up X-Forwarded-Host {host}
+      header_up X-Forwarded-Server {host}
+      header_up X-Forwarded-For {remote_host}
+    }
+  }
+
+  # Proxy requests to the Node.js backend
+  handle_path /api/node/* {
+    reverse_proxy ${NODE_SERVICE} {
+      header_up X-Forwarded-Host {host}
+      header_up X-Forwarded-Server {host}
+      header_up X-Forwarded-For {remote_host}
+    }
+  }
+
+  # Serve static files (React/Vue/etc.)
+  root * /srv
+  file_server
+}

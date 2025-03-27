@@ -1,27 +1,25 @@
+name: "compose-lab"
+
 services:
-  client-react-vite:
-    image: client-react-vite
-    build:
-      context: ../client-react/
-      dockerfile: ../client-react/Dockerfiles/Dockerfile.3
-    volumes:
-      - ./client-react/vite.config.js:/usr/src/app/vite.config.js
-    networks:
-      - frontend
-    ports:
-      - 5173:5173
-  client-react-nginx:
+  client-react-caddy:
     labels:
       shipyard.primary-route: true
       shipyard.route: "/"
-    image: client-react-nginx
+    image: client-react-caddy
     build:
       context: ../client-react/
-      dockerfile: ../client-react/Dockerfiles/Dockerfile.5
+      dockerfile: ../client-react/Dockerfiles/Dockerfile.6
+    environment:
+      - NODE_SERVICE=http://api-node:3000
+      - GO_SERVICE=http://api-golang:8080
     networks:
       - frontend
     ports:
       - 80:8080
+    depends_on:
+      - db
+      - api-node
+      - api-golang
     restart: unless-stopped
   api-node:
     labels:
