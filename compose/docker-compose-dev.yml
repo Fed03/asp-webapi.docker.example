@@ -1,0 +1,92 @@
+name: "compose-lab"
+
+services:
+  client-react-vite:
+    image: client-react-vite
+    build:
+      context: ../client-react/
+      dockerfile: ../client-react/Dockerfiles/Dockerfile.3
+    environment:
+      - NODE_SERVICE=http://api-node:3000
+      - GO_SERVICE=http://api-golang:8080
+    networks:
+      - frontend
+    ports:
+      - 5173:5173
+    depends_on:
+      - db
+      - api-node
+      - api-golang
+    develop:
+      watch:
+        - path: ../client-react/package.json
+          action: rebuild
+        - path: ../client-react/
+          target: /usr/src/app
+          ignore:
+            - node_modules/
+            - package*.json
+          action: sync
+    restart: unless-stopped
+  api-node:
+    image: api-node
+    build:
+      context: ../api-node/
+      dockerfile: ../api-node/Dockerfiles/Dockerfile.9
+      target: dev
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - frontend
+      - backend
+    ports:
+      - 3000:3000
+    develop:
+      watch:
+        - path: ../api-node/package.json
+          action: rebuild
+        - path: ../api-node/
+          target: /usr/src/app
+          ignore:
+            - node_modules/
+            - package*.json
+          action: sync
+    restart: unless-stopped
+  api-golang:
+    image: api-golang
+    build:
+      context: ../api-golang/
+      dockerfile: ../api-golang/Dockerfiles/Dockerfile.6
+      target: dev
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:foobarbaz@db:5432/postgres
+    networks:
+      - frontend
+      - backend
+    ports:
+      - 8080:8080
+    develop:
+      watch:
+        - path: ../api-golang/
+          target: /app
+          action: sync
+    restart: unless-stopped
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=foobarbaz
+    networks:
+      - backend
+    ports:
+      - 5432:5432
+volumes:
+  pgdata:
+networks:
+  frontend:
+  backend:

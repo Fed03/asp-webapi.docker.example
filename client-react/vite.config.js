@@ -1,24 +1,24 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import dns from 'dns';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import dns from "dns";
 
-dns.setDefaultResultOrder('verbatim');
+dns.setDefaultResultOrder("verbatim");
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api/golang': {
-        target: 'http://localhost:8080',
+      "/api/golang": {
+        target: process.env.GO_SERVICE,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/golang/, ''),
+        rewrite: (path) => path.replace(/^\/api\/golang/, ""),
         secure: false,
       },
-      '/api/node': {
-        target: 'http://localhost:3000',
+      "/api/node": {
+        target: process.env.NODE_SERVICE,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/node/, ''),
+        rewrite: (path) => path.replace(/^\/api\/node/, ""),
         secure: false,
       },
     },
