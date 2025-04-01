@@ -21,6 +21,12 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/node/, ""),
         secure: false,
       },
+      "/api/dotnet": {
+        target: process.env.DOTNET_SERVICE,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/dotnet/, ""),
+        secure: false,
+      },
     },
   },
 });
